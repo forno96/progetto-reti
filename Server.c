@@ -70,64 +70,83 @@ int char2int (char A[], int i){
     } else if (A[i]=='0'){
         return 0;
     } else {
-        printf("Prova7");
         return -1;
     }
 }
 
 int string2int(char A[],int i, int f){
-    printf("%d\n",f);
     if (f>=i){
-        printf("Prova1\n");
         if (f==i) {
             int a=char2int(A,i);
-            if (a==-1) {
-                printf("Prova2\n");
-                return -1;
-            }
-            else {
-                printf("Prova3\n");
-                return a;
-            }
+            if (a==-1) return -1;
+            else return a;
         } else {
             int b=char2int(A,f);
             int c=string2int(A,i,f-1);
-            if ((b==-1)|(c==-1)) {
-                printf("Prova4\n");
-                return -1;
-            }
-            else {
-                printf("Prova5\n");
-                return (b+(c*10));
-            }
+            if ((b==-1)|(c==-1)) return -1;
+            else return (b+(c*10));
         }
-    } else {
-        printf("Prova6\n");
-        return -1;
-    }
+    } else return -1;
 }
 
 int gapArray(char A[]){
     if(((A[0]=='X')|(A[0]=='x')|(A[0]=='Y')|(A[0]=='y'))&(A[1]=='(')){
         for(int i=2; i<512; i=i+1){
-            printf("Prova11 %d\n",i);
             if (A[i]==')') {
-                printf("Prova8\n");
                 return (i-1);
             }
         }
-        printf("Prova9\n");
         return -1;
     }
-    printf("Prova10\n");
     return -1;
 }
+
+/*
+char int2char(int i){
+    if (i==1){
+        return '1';
+    } else if (i==2){
+        return '2';
+    } else if (i==3){
+        return '3';
+    } else if (i==4){
+        return '4';
+    } else if (i==5){
+        return '5';
+    } else if (i==6){
+        return '6';
+    } else if (i==7){
+        return '7';
+    } else if (i==8){
+        return '8';
+    } else if (i==9){
+        return '9';
+    } else if (i==0){
+        return '0';
+    } else {
+        return '\0';
+    }
+}
+
+void createCor(char[] &A,int x,int y){
+    A[0]='[';
+    int a,e=x;
+    for (int i=1; e>0; i++) {
+        a=e
+        A[i]=
+    }
+}
+*/
 
 int main(){
     //N.B. L'esempio non usa la funzione fork per far vedere l'utilizzo di
     //     socket non bloccanti
     
     char  buffer[512];
+    
+    char buffer2[512];
+    int buf=0;
+    
     int DescrittoreSocket,NuovoSocket;
     int exitCond=0;
     int Quanti, Quanti2;
@@ -151,11 +170,6 @@ int main(){
                 //Aggiusto la lunghezza...
                 buffer[Quanti]=0;
                 //Elaborazione dati ricevuti
-                for(int e=0;e<5;e=e+1){
-                    printf("%d:%c\n",e,buffer[e]);
-                }
-                printf("\n");
-                
                 int i;
                 if (buffer[2]=='-') {
                     i=-(string2int(buffer,3,gapArray(buffer)));
@@ -177,10 +191,17 @@ int main(){
                 printf("Server: coordinate attuali:[%d,%d] \n",x,y);
                 
                 /*
-                if (strcmp(buffer,"4")==0){
-                    printf("Hello World");
-                    exitCond=1;}
-                else printf("Server: %s \n",buffer);
+                //ritorno del messaggio
+                createCor(buffer2,x,y);
+                while (buffer2[buf] != '\0') {
+                    printf("%c\n", buffer2[buf]);
+                    buf++;
+                }
+                if (write(NuovoSocket, buffer2, sizeof(buffer2)) >0 ){
+                    printf("Cordinate inviate al client\n");
+                } else {
+                    printf("Coordinate non inviate");
+                }
                 */
             }
             //Chiusura del socket temporaneo

@@ -10,21 +10,15 @@
 #include <arpa/inet.h>
 
 int check(char d[]){
-    if((d[0]=='X')|(d[0]=='x')|(d[0]=='Y')|(d[0]=='y')){
-        if (d[1]=='('){
-            int i=2;
-            if (d[2]=='-') i=3;
-            if((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0')){
-                i=i+1;
-                while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0')) {
-                    i=i+1;
-                }
-                if ((d[i]==')')&(d[i+1]=='\0')){
-                    return 1;
-                } else return 0;
-            } else return 0;
-        } else return 0;
-    } else return 0;
+    int i = 2;
+    if((d[0]!='S')&(d[0]!='s')&(d[0]!='D')&(d[0]!='d')&(d[0]!='A')&(d[0]!='a')&(d[0]!='B')&(d[0]!='b')) return 0;
+    if (d[1]!='(') return 0;
+    if (d[2]=='-') i=3;
+    while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0')) i=i+1;
+    if (((i==2)|(i==3)) & ((i-1)=='-')) return 0;
+    if (d[i]!=')') return 0;
+    if ((d[i+1]!='\0')&(d[i+1]!='\n')&(d[i+1]!='\r')) return 0;
+    return 1;
 }
 
 int main(int argc, char* argv[]){
@@ -49,61 +43,58 @@ int main(int argc, char* argv[]){
         
     }
     
-    //char direzione[512];
-    char* direzione = malloc(80*sizeof(char));
-    direzione[0]='\0';
+    //input direzione
+    //char* direzione = malloc(80*sizeof(char));
+    printf("Prova1\n");
+    char * direzione;
+    printf("Prova2\n");
     do{
+        
+        scanf("%ms",&direzione);
         if (direzione[0]!='\0') {
-            printf("Hai inserito una coordinata sbagliata!!\n");
+            printf("Hai dato un input non corretto!!\n");
         }
-        printf("Inserisci la direzione (X(n) o Y (n)):");
-        scanf("%s", direzione);
+        printf("Inserisci la direzione (A(n),B(n),S(n),D(n)):");
     } while(check(direzione)!=1);
     
-    /*
-    printf("Inserisci la direzione (X(n) o Y (n)):");
-    scanf("%s", direzione);
-    
     int i=0;
     while (direzione[i] != '\0') {
-        printf("%d:%c\n",i, direzione[i]);
         i++;
     }
     
-    //printf("1: %c , %c\n", direzione[0], direzione[1]);
-    while (check(direzione)!=1){
-        printf("Hai inserito un carattere errato!!!\nInserisci la direzione (X(n) o Y (n)):");
-        scanf("%s", direzione);
-        i=0;
-        while (direzione[i] != '\0') {
-            printf("%d:%c\n",i, direzione[i]);
-            i++;
-        }
-    }
-    */
-    
-    int i=0;
-    while (direzione[i] != '\0') {
-        printf("%d:%c\n",i, direzione[i]);
-        i++;
-    }
-    
+    //invio direzione
     if ((write(sockfd,direzione,i)) < 0 ) {
         printf("Errore scrittura: %d\n",errore);
         exit (-3);
     }
-
-    /*
-    char prova[20];
-    scanf("%s",prova);
     
-    errore = write(sockfd,prova,20);
-    if (errore < 0 ) {
-        printf("Errore scrittura: %d\n",errore);
-        exit (-3);
+    /*
+    // ritorno del messaggio
+    char  buffer[512];
+    if (read(socket,buffer,sizeof(buffer))>0){
+        printf("Posizione puntatore: %s",buffer);
+    } else (n<0) {
+        printf("Messaggio non ritornato");
     }
     */
     
+    //ripetizione
+    char flag[1]={'\0'};
+    int f=0;
+    do{
+        if (flag[0]!='\0') printf("%s non è una risposta corretta\n",&flag[0]);
+        printf("Vuoi continuare? (Y o N):");
+        scanf("%s",&flag[0]);
+        f=0;
+        while (flag[f] != '\0') {
+            f++;
+        }
+    } while (((f!=1))|((flag[0]!='Y')&(flag[0]!='y')&(flag[0]!='N')&(flag[0]!='n')));
+    
+    if ((flag[0]=='Y')||(flag[0]=='y')) {
+        main(argc,argv);
+    }
+    free (direzione);
     close(sockfd);
     
     return 0;
