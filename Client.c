@@ -32,22 +32,30 @@ int main(int argc, char* argv[]){
 	}
 	
 	char direzione[MAXLINE];
-	scanf("%[^\t\n]",direzione);
+	char buffer[MAXLINE];
 	
-	if (direzione == NULL) {
-		printf("errore\n");
-		exit (-5);
-	}
-	
-	/*if (check(direzione)==0) {
-		printf("Error -4");
-		exit (-4);
-	}*/
-	
-	
-	if (write(sockfd,direzione,strlen(direzione)) < 0){
-		printf("Errore scrittura\n");
-		exit (-3);
+	while(1){
+		direzione[0] = '\0';
+		while(direzione[0] == '\0'){
+			printf("Inserisci la direzione (A(n),B(n),S(n),D(n) oppure Q per uscire):");
+			scanf("%s[^\0\n\r]",direzione);
+		}
+		
+		if ((strcmp(direzione,"q")==0)|(strcmp(direzione,"Q")==0)) {
+			close(sockfd);
+			return 0;
+		}
+		
+		if (write(sockfd,direzione,strlen(direzione)) < 0){
+			printf("Errore scrittura\n");
+			exit (-3);
+		}
+		/*
+		if (read(sockfd,buffer,sizeof(buffer))>0){
+			printf("%s\n",buffer);
+		} else {
+			printf("Messaggio non ritornato");
+		}*/
 	}
 
 	close(sockfd);

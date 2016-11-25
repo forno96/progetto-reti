@@ -32,7 +32,7 @@ int main(int argc, char* argv[]){
 	char buf[MAXLINE];
 	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-		printf("%d\n",listenfd);
+		printf("socket%d\n",listenfd);
 
 	memset(&servaddr,0 , sizeof(servaddr));
 	servaddr.sin_family      = AF_INET;
@@ -41,26 +41,31 @@ int main(int argc, char* argv[]){
 	printf("local address: IP %s port %d\n", inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port) );
 
 	errore = bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-		printf("%d\n",errore);
+		printf("bind%d\n",errore);
 	
 	errore = listen(listenfd, 10);
-		printf("%d\n",errore);
+		printf("listen%d\n",errore);
 
 	char * str;
-	for ( ; ; ) {
-		connfd = accept(listenfd, 0, 0);
-		printf("%d\n",connfd);
-		lung = read(connfd, buf, sizeof(buf));
-		//	sscanf(str, "%s", str2);		//scansiono parola per parola
-		buf[lung]=0;
-		printf("%s\n",buf);
-	
-	str = strtok(buf," ");
-	while ((str != NULL)&(check(str)!=0)){
-		printf("%s\n",str);
-		str = strtok(NULL," ");
+	while (1) {
+		if (connfd = accept(listenfd, (struct sockaddr *) NULL, NULL)!=-1){
+			printf("accept%d\n",connfd);
+			if ((lung = read(connfd, buf, sizeof(buf)))<0){
+				printf("read%d\n",lung);
+			}
+			else{
+				buf[lung]='\0';
+				printf("%s\n",buf);
+			
+				str = strtok(buf," ");
+				while ((str != NULL)&(check(str)!=0)){
+					printf("%s\n",str);
+					str = strtok(NULL," ");
+				}
+			}
+			close(connfd);
+		}
 	}
-	
-		close(connfd);
-	}
+	close(listenfd);
+    return 0;
 }
