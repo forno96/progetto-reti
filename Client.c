@@ -49,11 +49,10 @@ int main(int argc, char* argv[]){
         
     }
     
-    //input direzione
+    /* input direzione */
+    
     //char* direzione = malloc(80*sizeof(char));
-    printf("Prova1\n");
     char * direzione;
-    printf("Prova2\n");
     int cilclo=1;
     do{
         if (cilclo!=1) {
@@ -69,23 +68,21 @@ int main(int argc, char* argv[]){
         i++;
     }
     
-    //invio direzione
+    /* invio direzione */
     if ((write(sockfd,direzione,i)) < 0 ) {
         printf("Errore scrittura: %d\n",errore);
         exit (-3);
     }
     
-    /*
     // ritorno del messaggio
     char  buffer[512];
-    if (read(socket,buffer,sizeof(buffer))>0){
-        printf("Posizione puntatore: %s",buffer);
-    } else (n<0) {
+    if (read(sockfd,buffer,sizeof(buffer))>0){
+        printf("Posizione pedina: %s\n",buffer);
+    } else {
         printf("Messaggio non ritornato");
     }
-    */
     
-    //ripetizione
+    /* ripetizione */
     char flag[1]={'\0'};
     int f=0;
     do{

@@ -140,6 +140,7 @@ int createChar(char A[],int x, int y, int select){
     } else if (select==1){
         int i=y,e,a=x;
         if (x<0) {a=-x; A[y]='-'; i++;}
+        if (x==0) {A[i]=int2char(0); i++;}
         while (a>0) {
             e=a%10;
             a=(a-e)/10;
@@ -186,9 +187,7 @@ int main(){
             if ((Quanti=read(NuovoSocket,buffer,sizeof(buffer)))<0){
                 printf("Impossibile leggere il messaggio.\n");
                 ChiudiSocket(NuovoSocket);
-            }
-            else
-            {
+            } else {
                 //Aggiusto la lunghezza...
                 buffer[Quanti]=0;
                 //Elaborazione dati ricevuti
@@ -200,7 +199,6 @@ int main(){
                     i=string2int(buffer,2,gapArray(buffer));
                     if (i==-1) return 1;
                 }
-                
                 if (buffer[0]=='A'|buffer[0]=='a') {
                     printf("X modificata di %d\n",i);
                     x=x+i;
@@ -221,11 +219,6 @@ int main(){
                 
                 //ritorno del messaggio
                 createChar(buffer2,x,y,0);
-                while (buffer2[buf] != '\0') {
-                    printf("%c", buffer2[buf]);
-                    buf++;
-                }
-                printf("\n");
                 if (write(NuovoSocket, buffer2, sizeof(buffer2)) >0 ){
                     printf("Cordinate inviate al client\n");
                 } else {
