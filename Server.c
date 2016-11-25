@@ -18,8 +18,7 @@
 //"fcntl" per la funzione "fcntl"
 #include <fcntl.h>
 
-int CreaSocket(int Porta)
-{
+int CreaSocket(int Porta){
     int sock,errore;
     struct sockaddr_in temp;
     
@@ -42,8 +41,7 @@ int CreaSocket(int Porta)
     return sock;
 }
 
-void ChiudiSocket(int sock)
-{
+void ChiudiSocket(int sock){
     close(sock);
     return;
 }
@@ -74,34 +72,6 @@ int char2int (char A[], int i){
     }
 }
 
-int string2int(char A[],int i, int f){
-    if (f>=i){
-        if (f==i) {
-            int a=char2int(A,i);
-            if (a==-1) return -1;
-            else return a;
-        } else {
-            int b=char2int(A,f);
-            int c=string2int(A,i,f-1);
-            if ((b==-1)|(c==-1)) return -1;
-            else return (b+(c*10));
-        }
-    } else return -1;
-}
-
-int gapArray(char A[]){
-    if(((A[0]=='X')|(A[0]=='x')|(A[0]=='Y')|(A[0]=='y'))&(A[1]=='(')){
-        for(int i=2; i<512; i=i+1){
-            if (A[i]==')') {
-                return (i-1);
-            }
-        }
-        return -1;
-    }
-    return -1;
-}
-
-/*
 char int2char(int i){
     if (i==1){
         return '1';
@@ -128,15 +98,67 @@ char int2char(int i){
     }
 }
 
-void createCor(char[] &A,int x,int y){
-    A[0]='[';
-    int a,e=x;
-    for (int i=1; e>0; i++) {
-        a=e
-        A[i]=
-    }
+int string2int(char A[],int i, int f){
+    if (f>=i){
+        if (f==i) {
+            int a=char2int(A,i);
+            if (a==-1) return -1;
+            else return a;
+        } else {
+            int b=char2int(A,f);
+            int c=string2int(A,i,f-1);
+            if ((b==-1)|(c==-1)) return -1;
+            else return (b+(c*10));
+        }
+    } else return -1;
 }
-*/
+
+int gapArray(char A[]){
+    if(((A[0]=='A')|(A[0]=='a')|(A[0]=='B')|(A[0]=='b')|(A[0]=='D')|(A[0]=='d')|(A[0]=='S')|(A[0]=='s'))&(A[1]=='(')){
+        for(int i=2; i<512; i=i+1){
+            if (A[i]==')') {
+                return (i-1);
+            }
+        }
+        return -1;
+    }
+    return -1;
+}
+
+int createChar(char A[],int x, int y, int select){
+    if (select==0){
+        A[0]='[';
+        int i=1,a;
+        i=createChar(A, x, i, 1);
+        createChar(A, 1, i-1, 2);
+        A[i]=',';
+        i++;
+        a=createChar(A, y, i, 1);
+        createChar(A, i, a-1, 2);
+        A[a]=']';
+        A[a+1]='\0';
+    } else if (select==1){
+        int i=y,e,a=x;
+        if (x<0) {a=-x; A[y]='-'; i++;}
+        while (a>0) {
+            e=a%10;
+            a=(a-e)/10;
+            A[i]=int2char(e);
+            i++;
+        }
+        return i;
+    } else if (select==2){
+        int a=x,b=y,e;
+        if (A[x]=='-') a=x+1;
+        while (a<b) {
+            e=A[b];
+            A[b]=A[a];
+            A[a]=e;
+            b--; a++;
+        }
+    }
+    return 0;
+}
 
 int main(){
     //N.B. L'esempio non usa la funzione fork per far vedere l'utilizzo di
@@ -179,30 +201,37 @@ int main(){
                     if (i==-1) return 1;
                 }
                 
-                if (buffer[0]=='X'|buffer[0]=='x') {
+                if (buffer[0]=='A'|buffer[0]=='a') {
                     printf("X modificata di %d\n",i);
                     x=x+i;
-                } else if (buffer[0]=='Y'|buffer[0]=='y') {
+                } else if (buffer[0]=='B'|buffer[0]=='b') {
+                    printf("Y modificata di %d\n",-i);
+                    x=x-i;
+                } else if (buffer[0]=='D'|buffer[0]=='d') {
                     printf("Y modificata di %d\n",i);
                     y=y+i;
+                } else if (buffer[0]=='S'|buffer[0]=='s') {
+                    printf("Y modificata di %d\n",-i);
+                    y=y-i;
                 } else {
                     printf("Server: Imput Error \n");
                 }
                 printf("Server: coordinate attuali:[%d,%d] \n",x,y);
                 
-                /*
+                
                 //ritorno del messaggio
-                createCor(buffer2,x,y);
+                createChar(buffer2,x,y,0);
                 while (buffer2[buf] != '\0') {
-                    printf("%c\n", buffer2[buf]);
+                    printf("%c", buffer2[buf]);
                     buf++;
                 }
+                printf("\n");
                 if (write(NuovoSocket, buffer2, sizeof(buffer2)) >0 ){
                     printf("Cordinate inviate al client\n");
                 } else {
                     printf("Coordinate non inviate");
                 }
-                */
+                
             }
             //Chiusura del socket temporaneo
             ChiudiSocket(NuovoSocket);

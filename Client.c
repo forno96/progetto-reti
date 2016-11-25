@@ -12,12 +12,18 @@
 int check(char d[]){
     int i = 2;
     if((d[0]!='S')&(d[0]!='s')&(d[0]!='D')&(d[0]!='d')&(d[0]!='A')&(d[0]!='a')&(d[0]!='B')&(d[0]!='b')) return 0;
+    //printf("1\n");
     if (d[1]!='(') return 0;
-    if (d[2]=='-') i=3;
-    while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0')) i=i+1;
-    if (((i==2)|(i==3)) & ((i-1)=='-')) return 0;
+    //printf("2\n");
+    if (d[2]=='-') {i=3;/*printf("3\n");*/}
+    while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0')) {i=i+1;/*printf("4\n");*/}
+    //printf("5\n");
+    if ((i==2) | ((i==3)&((d[2])=='-'))) return 0;
+    //printf("6\n");
     if (d[i]!=')') return 0;
+    //printf("7\n");
     if ((d[i+1]!='\0')&(d[i+1]!='\n')&(d[i+1]!='\r')) return 0;
+    //printf("8\n");
     return 1;
 }
 
@@ -48,13 +54,14 @@ int main(int argc, char* argv[]){
     printf("Prova1\n");
     char * direzione;
     printf("Prova2\n");
+    int cilclo=1;
     do{
-        
-        scanf("%ms",&direzione);
-        if (direzione[0]!='\0') {
+        if (cilclo!=1) {
             printf("Hai dato un input non corretto!!\n");
         }
         printf("Inserisci la direzione (A(n),B(n),S(n),D(n)):");
+        scanf("%ms",&direzione);
+        cilclo++;
     } while(check(direzione)!=1);
     
     int i=0;
