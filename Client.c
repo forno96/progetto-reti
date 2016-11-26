@@ -36,36 +36,28 @@ int main(int argc, char* argv[]){
 	int lung;
 	
 	while(1){
-		strcpy(direzione,"\0");
-		while(strcmp(direzione,"\0")==0){
+		strcpy(direzione,"\n");
+		while(direzione[0] == '\n'){
 			printf("Inserisci la direzione (A(n),B(n),S(n),D(n) oppure Q per uscire):");
-			scanf("%[^\n]%*c",direzione);
+			//scanf("%[^\n]%*c",direzione);
+			fgets(direzione, MAXLINE, stdin);
 		}
 		
-		if ((strcmp(direzione,"q")==0)|(strcmp(direzione,"Q")==0)) {
+		if ((strcmp(direzione,"q\n")==0)|(strcmp(direzione,"Q\n")==0)) {
 			close(sockfd);
 			return 0;
 		}
-		//if (write(sockfd,direzione,strlen(direzione)+1) < 0){
+		
 		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
 			printf("Errore scrittura\n");
 			exit (-3);
 		}
 		
-		//if (read(sockfd,buffer,strlen(buffer))>0){
-		if ((lung = recv(sockfd, buffer, 3, 0))>0){
-			if (strcmp(buffer,"-1")==0){
-				if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
-					printf("%s\n",buffer);
-				}
-				else{
-					printf("Errore ricezione2");
-				}
-			}
+		if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
+			printf("%s\n",buffer);
 		}
 		else{
-			//printf("%s\n",buffer);
-			printf("Errore ricezione1");
+			printf("Errore ricezione\n");
 		}
 	}
 
