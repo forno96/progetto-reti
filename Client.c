@@ -35,23 +35,24 @@ int main(int argc, char* argv[]){
 	char buffer[MAXLINE];
 	
 	while(1){
-		direzione[0] = '\0';
-		while(direzione[0] == '\0'){
+		strcpy(direzione,"\0");
+		while(strcmp(direzione,"\0")==0){
 			printf("Inserisci la direzione (A(n),B(n),S(n),D(n) oppure Q per uscire):");
-			scanf("%s[^\0\n\r]",direzione);
+			scanf("%[^\n]%*c",direzione);
 		}
 		
 		if ((strcmp(direzione,"q")==0)|(strcmp(direzione,"Q")==0)) {
 			close(sockfd);
 			return 0;
 		}
-		
-		if (write(sockfd,direzione,strlen(direzione)) < 0){
+		printf("%d\n",strlen(direzione));
+		printf("%s\n",direzione);
+		if (write(sockfd,direzione,strlen(direzione)+1) < 0){
 			printf("Errore scrittura\n");
 			exit (-3);
 		}
 		/*
-		if (read(sockfd,buffer,sizeof(buffer))>0){
+		if (read(sockfd,buffer,strlen(buffer))>0){
 			printf("%s\n",buffer);
 		} else {
 			printf("Messaggio non ritornato");
