@@ -33,6 +33,7 @@ int main(int argc, char* argv[]){
 	
 	char direzione[MAXLINE];
 	char buffer[MAXLINE];
+	int lung;
 	
 	while(1){
 		strcpy(direzione,"\0");
@@ -45,18 +46,27 @@ int main(int argc, char* argv[]){
 			close(sockfd);
 			return 0;
 		}
-		printf("%d\n",strlen(direzione));
-		printf("%s\n",direzione);
-		if (write(sockfd,direzione,strlen(direzione)+1) < 0){
+		//if (write(sockfd,direzione,strlen(direzione)+1) < 0){
+		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
 			printf("Errore scrittura\n");
 			exit (-3);
 		}
-		/*
-		if (read(sockfd,buffer,strlen(buffer))>0){
-			printf("%s\n",buffer);
-		} else {
-			printf("Messaggio non ritornato");
-		}*/
+		
+		//if (read(sockfd,buffer,strlen(buffer))>0){
+		if ((lung = recv(sockfd, buffer, 3, 0))>0){
+			if (strcmp(buffer,"-1")==0){
+				if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
+					printf("%s\n",buffer);
+				}
+				else{
+					printf("Errore ricezione2");
+				}
+			}
+		}
+		else{
+			//printf("%s\n",buffer);
+			printf("Errore ricezione1");
+		}
 	}
 
 	close(sockfd);
