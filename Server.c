@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 //#include <sys/types.h>
 //#include <netinet/in.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 //#include <netdb.h>
@@ -42,43 +42,49 @@ int checkString(char d[]){
     return 0;
 }*/
 
-int check(char d[]){
-	int i = 2;
+int check(char d[], int *a, int *b){
 	if (strcmp(d,"\0")==0) return -1;
-    if((d[0]!='S')&(d[0]!='s')&(d[0]!='D')&(d[0]!='d')&(d[0]!='A')&(d[0]!='a')&(d[0]!='B')&(d[0]!='b')) return -1;
+	//if (strcspn(d,"SsDdAaBb")!=0) return -1;
 	if (d[1]!='(') return -1;
-	if (d[2]=='-') i=3;
-	while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0'))
-		i=i+1;
-	if ((i==2)|((i==3) & ((i-1)=='-'))) return -1;
-	if (d[i]!=')') return -1;
-	//if ((d[i+1]!='\0')&(d[i+1]!='\n')&(d[i+1]!='\r')) return -1;
+	char* p = &d[2];
+	int num = strtoul(p, &p, 10);
+	if ((*p!=')')||(d[2]==')')) return -1;
+	if (p[1]!='\0') return -1;
+	if ((d[0]=='S')||(d[0]=='s'))*a = -(-(*a)+num);
+	else if ((d[0]=='D')||(d[0]=='d'))*a=*a+num;
+	else if ((d[0]=='A')||(d[0]=='a'))*b=*b+num;
+	else if ((d[0]=='B')||(d[0]=='b'))*b = -(-(*b)+num);
+	else return -1;
+	printf("%d\n",*a);
+	printf("%d\n",*b);
 	return 0;
 }
 
-void tokenize(char buf[]){
+void tokenize(char buf[], int *x, int *y){
 	char * punt = &buf[0];
 	char * token;
-	int boolean = 0;
-	int n;
+	int n, boolean = 0;
+	int a = *x;
+	int b = *y;
 	while ((punt[0] != '\0')&(boolean != -1)){
 		sscanf(punt,"%ms%n",&token,&n);
 		punt = &punt[n+1];
-		//punt=strchr(punt+1,' ');
-		boolean = check(token);
+		boolean = check(token, &a, &b);
 	}
 	if (boolean == -1){
 		sprintf(buf,"Errore stringa: %s\0",token);
 	}
 	else {
-		strcpy(buf,"ok");
+		*x=a;
+		*y=b;
+		sprintf(buf,"x=%d,y=%d",a,b);
 	}
 	free(token);
 }
 
 int main(int argc, char* argv[]){
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, errore, lung, pid, boolean = 0;
+	int listenfd, connfd, errore, lung, pid, boolean = 0, x = 0, y = 0;
 	char buf[MAXLINE];
 	int len=sizeof(client_addr);
 	char * str;
@@ -111,13 +117,7 @@ int main(int argc, char* argv[]){
 			while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
 				buf[lung] = '\0';
 				printf("%s\n",buf);
-			//	send(connfd, buf, strlen(buf)+1, 0);
-				/*for (str = strtok(buf," "); (str != NULL)&(boolean != -1); str = strtok(NULL, " ")){
-					//puts(str);
-					boolean = check(str);
-					printf("%s\n",str);
-				}*/
-				tokenize(buf);
+				tokenize(buf, &x, &y);
 				printf("%s\n",buf);
 				/*
 				boolean = checkString(buf);
@@ -127,7 +127,6 @@ int main(int argc, char* argv[]){
 				if (boolean == -1){
 					send(connfd, str, strlen(str)+1, 0);
 				}
-				//send(connfd, buf, strlen(buf)+1, 0);
 				strcpy(buf,"\0");
 			}
 			printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));

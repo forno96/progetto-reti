@@ -42,8 +42,9 @@ int main(int argc, char* argv[]){
 			//scanf("%[^\n]%*c",direzione);
 			fgets(direzione, MAXLINE, stdin);
 		}
+		direzione[strlen(direzione)-1] = '\0';
 		
-		if ((strcmp(direzione,"q\n")==0)|(strcmp(direzione,"Q\n")==0)) {
+		if ((strcmp(direzione,"q")==0)||(strcmp(direzione,"Q")==0)) {
 			close(sockfd);
 			return 0;
 		}
