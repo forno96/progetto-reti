@@ -10,41 +10,9 @@
 #include <arpa/inet.h>
 
 #define MAXLINE	512
-/*
-int checkToken(char d[],int i){
-  if (strcmp(d,"\0")==0) return -1;
-  printf("1\n");
-  if((d[i]!='S')&(d[0]!='s')&(d[0]!='D')&(d[0]!='d')&(d[0]!='A')&(d[0]!='a')&(d[0]!='B')&(d[0]!='b')) return -1;
-  if (d[i+1]!='(') return -1;
-  if (d[i+2]=='-') i=i+3;
-  else i=i+2;
-  printf("2\n");
-  int Is=i;
-  while ((d[i]=='1')|(d[i]=='2')|(d[i]=='3')|(d[i]=='4')|(d[i]=='5')|(d[i]=='6')|(d[i]=='7')|(d[i]=='8')|(d[i]=='9')|(d[i]=='0'))
-    i=i+1;
-  printf("3\n");
-  if (i==Is) return -1;
-  printf("33\n");
-  if (d[i]!=')') return -1;
-  printf("34\n");
-  if ((d[i+1]!=' ')&(d[i+1]!='\0')&(d[i+1]!='\n')&(d[i+1]!='\r')) return -1;
-  printf("4\n");
-  return i+1;
-}
-
-int checkString(char d[]){
-    int i = -1;
-	do{
-		i=checkToken(d,i+1);
-	}
-    while ((i!=-1)&(d[i]!='\0')&(d[i]!='\n')&(d[i]!='\r'));
-	if (i==-1) return -1;
-    return 0;
-}*/
 
 int check(char d[], int *a, int *b){
 	if (strcmp(d,"\0")==0) return -1;
-	//if (strcspn(d,"SsDdAaBb")!=0) return -1;
 	if (d[1]!='(') return -1;
 	char* p = &d[2];
 	int num = strtoul(p, &p, 10);
@@ -55,8 +23,6 @@ int check(char d[], int *a, int *b){
 	else if ((d[0]=='A')||(d[0]=='a'))*b=*b+num;
 	else if ((d[0]=='B')||(d[0]=='b'))*b = -(-(*b)+num);
 	else return -1;
-	printf("%d\n",*a);
-	printf("%d\n",*b);
 	return 0;
 }
 
@@ -72,7 +38,7 @@ void tokenize(char buf[], int *x, int *y){
 		boolean = check(token, &a, &b);
 	}
 	if (boolean == -1){
-		sprintf(buf,"Errore stringa: %s\0",token);
+		sprintf(buf,"Errore stringa: %s",token);
 	}
 	else {
 		*x=a;
@@ -84,13 +50,16 @@ void tokenize(char buf[], int *x, int *y){
 
 int main(int argc, char* argv[]){
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, errore, lung, pid, boolean = 0, x = 0, y = 0;
+	int listenfd, connfd, lung, pid = 0, boolean = 0, x = 0, y = 0;
 	char buf[MAXLINE];
 	int len=sizeof(client_addr);
 	char * str;
 	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-		printf("socket%d\n",listenfd);
+	if (listenfd < 0){
+		printf("Errore socket\n");
+		exit(1);
+	}
 
 	memset(&servaddr,0 , sizeof(servaddr));
 	servaddr.sin_family      = AF_INET;
@@ -98,40 +67,49 @@ int main(int argc, char* argv[]){
 	servaddr.sin_port        = htons(atoi(argv[1]));
 	printf("local address: IP %s port %d\n", inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port) );
 
-	errore = bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-		printf("bind%d\n",errore);
+	if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0){
+		printf("Errore bind\n");
+		exit(2);
+	}
 	
-	errore = listen(listenfd, 10);
-		printf("listen%d\n",errore);
+	if (listen(listenfd, 10)<0){
+		printf("Errore listen\n");
+		pid = -1;
+	}
 
-	for( ; ; ){
-		strcpy(buf,"\0");
+	while(pid == 0){
+		memset ( &client_addr, 0, sizeof(client_addr) );
+		len=sizeof(client_addr);
 		connfd = accept(listenfd, (struct sockaddr*) &client_addr, &len);
-		printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-		pid = fork();
-		if ( pid !=0 ){
-			close ( connfd );
+		if (connfd < 0){
+			printf("Errore accept\n");
+			pid = -1;
 		}
-		else {
-			close(listenfd);
-			while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
-				buf[lung] = '\0';
-				printf("%s\n",buf);
-				tokenize(buf, &x, &y);
-				printf("%s\n",buf);
-				/*
-				boolean = checkString(buf);
-				printf("%d\n",boolean);
-				sprintf(buf,"%d\0",boolean);*/
-				send(connfd, buf, strlen(buf)+1, 0);
-				if (boolean == -1){
-					send(connfd, str, strlen(str)+1, 0);
-				}
-				strcpy(buf,"\0");
+		else{
+			printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+			pid = fork();
+			if ( pid !=0 ){
+				close(connfd);
+				pid = 0;
 			}
-			printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-			close(connfd);
-			exit(0);
+			else {
+				close(listenfd);
+				strcpy(buf,"\0");
+				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
+					buf[lung] = '\0';
+					printf("%s\n",buf);
+					tokenize(buf, &x, &y);
+					printf("%s\n",buf);
+					sleep(15);
+					send(connfd, buf, strlen(buf)+1, 0);
+					if (boolean == -1){
+						send(connfd, str, strlen(str)+1, 0);
+					}
+					strcpy(buf,"\0");
+				}
+				printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+				close(connfd);
+			}
 		}
 	}
     return 0;

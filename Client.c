@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
 		}
 		
 		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
-			printf("Errore scrittura\n");
+			printf("Errore send\n");
 			exit (-3);
 		}
 		
@@ -58,7 +58,8 @@ int main(int argc, char* argv[]){
 			printf("%s\n",buffer);
 		}
 		else{
-			printf("Errore ricezione\n");
+			printf("Errore recv\n");
+			
 		}
 	}
 
