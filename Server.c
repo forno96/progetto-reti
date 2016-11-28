@@ -94,18 +94,25 @@ int main(int argc, char* argv[]){
 			}
 			else {
 				close(listenfd);
+				pid = -1;
 				strcpy(buf,"\0");
 				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
 					buf[lung] = '\0';
 					printf("%s\n",buf);
 					tokenize(buf, &x, &y);
 					printf("%s\n",buf);
-					sleep(15);
-					send(connfd, buf, strlen(buf)+1, 0);
+					if (send(connfd, buf, strlen(buf)+1, 0) < 0){
+						printf("Errore send\n");
+						exit (3);
+					}
 					if (boolean == -1){
 						send(connfd, str, strlen(str)+1, 0);
 					}
 					strcpy(buf,"\0");
+				}
+				if (lung == -1){
+					printf("Errore recv\n");
+					exit (4);
 				}
 				printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 				close(connfd);

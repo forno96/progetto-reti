@@ -18,7 +18,7 @@ int main(int argc, char* argv[]){
 	sockfd=socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0 ) {
 		printf("Errore socket: %d\n",sockfd);
-		exit (-1);
+		exit (1);
 	}
 	
 	memset(&servaddr, 0, sizeof(servaddr));
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
 	
 	if (connect(sockfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
 		printf("Errore connessione\n");
-		exit (-2);
+		exit (2);
 	}
 	
 	char direzione[MAXLINE];
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 		
 		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
 			printf("Errore send\n");
-			exit (-3);
+			exit (3);
 		}
 		
 		if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
 		}
 		else{
 			printf("Errore recv\n");
-			
+			exit (4);
 		}
 	}
 
