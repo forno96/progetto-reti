@@ -12,10 +12,10 @@
 #define MAXLINE	512
 
 int check(char d[], int *a, int *b){
-	if (strcmp(d,"\0")==0) return -1;
+	if (strcmp(d,"\0")==0) return -1; //cosa significa?
 	if (d[1]!='(') return -1;
 	char* p = &d[2];
-	int num = strtoul(p, &p, 10);
+	int num = (int)strtoul(p, &p, 10);
 	if ((*p!=')')||(d[2]==')')) return -1;
 	if (p[1]!='\0') return -1;
 	if ((d[0]=='S')||(d[0]=='s'))*a = -(-(*a)+num);
@@ -32,11 +32,13 @@ void tokenize(char buf[], int *x, int *y){
 	int n, boolean = 0;
 	int a = *x;
 	int b = *y;
+    printf("%s",buf);
 	while ((punt[0] != '\0')&(boolean != -1)){
 		sscanf(punt,"%ms%n",&token,&n);
 		punt = &punt[n+1];
-		boolean = check(token, &a, &b);
+		boolean = check(token, &a, &b); //li passa un token vuoto!!
 	}
+    
 	if (boolean == -1){
 		sprintf(buf,"Errore stringa: %s",token);
 	}
@@ -49,11 +51,17 @@ void tokenize(char buf[], int *x, int *y){
 }
 
 int main(int argc, char* argv[]){
+    if (argc!=2){
+        printf("Hai dato un numero sbagliato di argomenti!!\n");
+        return 0;
+    }
+    
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, lung, pid = 0, boolean = 0, x = 0, y = 0;
+	int listenfd, connfd, pid = 0, boolean = 0, x = 0, y = 0;
 	char buf[MAXLINE];
-	int len=sizeof(client_addr);
+	socklen_t len=sizeof(client_addr);
 	char * str;
+    ssize_t lung;
 	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd < 0){
@@ -84,23 +92,20 @@ int main(int argc, char* argv[]){
 		if (connfd < 0){
 			printf("Errore accept\n");
 			pid = -1;
-		}
-		else{
+		} else {
 			printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 			pid = fork();
 			if ( pid !=0 ){
 				close(connfd);
 				pid = 0;
-			}
-			else {
+			} else {
 				close(listenfd);
 				pid = -1;
 				strcpy(buf,"\0");
-				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
+                
+				while ((lung = recv(connfd, buf, sizeof(MAXLINE), 0))>0){
 					buf[lung] = '\0';
-					printf("%s\n",buf);
 					tokenize(buf, &x, &y);
-					printf("%s\n",buf);
 					if (send(connfd, buf, strlen(buf)+1, 0) < 0){
 						printf("Errore send\n");
 						exit (3);
@@ -110,6 +115,7 @@ int main(int argc, char* argv[]){
 					}
 					strcpy(buf,"\0");
 				}
+                
 				if (lung == -1){
 					printf("Errore recv\n");
 					exit (4);

@@ -12,6 +12,11 @@
 #define MAXLINE	512
 
 int main(int argc, char* argv[]){
+    if (argc!=3){
+        printf("Hai dato un numero sbagliato di argomenti!!\n");
+        return 0;
+    }
+    
 	struct sockaddr_in servaddr;
 	int sockfd;
 	
@@ -20,7 +25,7 @@ int main(int argc, char* argv[]){
 		printf("Errore socket: %d\n",sockfd);
 		exit (1);
 	}
-	
+    
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family=AF_INET;
 	servaddr.sin_port = htons(atoi(argv[2]));
@@ -39,7 +44,6 @@ int main(int argc, char* argv[]){
 		strcpy(direzione,"\n");
 		while(direzione[0] == '\n'){
 			printf("Inserisci la direzione (A(n),B(n),S(n),D(n) oppure Q per uscire):");
-			//scanf("%[^\n]%*c",direzione);
 			fgets(direzione, MAXLINE, stdin);
 		}
 		direzione[strlen(direzione)-1] = '\0';
@@ -56,8 +60,7 @@ int main(int argc, char* argv[]){
 		
 		if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
 			printf("%s\n",buffer);
-		}
-		else{
+		} else {
 			printf("Errore recv\n");
 			exit (4);
 		}
