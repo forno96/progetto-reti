@@ -1,12 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-//#include <sys/types.h>
-//#include <netinet/in.h>
-//#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-//#include <netdb.h>
 #include <arpa/inet.h>
 
 #define MAXLINE	512
@@ -33,10 +29,10 @@ void tokenize(char buf[], int *x, int *y){
 	int a = *x;
 	int b = *y;
 	while ((punt[0] != '\0')&(boolean != -1)){
-		sscanf(punt,"%m[^ \t\n]%n",&token,&n);
+		sscanf(punt,"%ms%n",&token,&n);
         //printf("%s\n",token);
 		punt = &punt[n+1];
-		boolean = check(token, &a, &b); //li passa un token vuoto!! (su mac)
+		boolean = check(token, &a, &b);
 	}
     
 	if (boolean == -1){
@@ -45,7 +41,7 @@ void tokenize(char buf[], int *x, int *y){
 	else {
 		*x=a;
 		*y=b;
-		sprintf(buf,"[%d,%d]",a,b);
+		sprintf(buf,"[%d,%d]",*x,*y);
 	}
 	free(token);
 }
@@ -57,7 +53,7 @@ int main(int argc, char* argv[]){
     }
     
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, pid = 0, x = 0, y = 0;
+	int listenfd, connfd, pid = 1, x = 0, y = 0;
 	char buf[MAXLINE];
 	socklen_t len=sizeof(client_addr);
     ssize_t lung;
@@ -74,33 +70,30 @@ int main(int argc, char* argv[]){
 	servaddr.sin_port        = htons(atoi(argv[1]));
 	printf("local address: IP %s port %d\n", inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port) );
 
-	if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0){
+	if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0){ //collega i soket allindirizzo locale
 		printf("Errore bind\n");
 		exit(2);
 	}
 	
-	if (listen(listenfd, 1)<0){
+	if (listen(listenfd, 10)<0){ //fa passare il soket da close a listen e accetta le connessioni per quel socket e ne identifica il numero massimo
 		printf("Errore listen\n");
-		pid = -1;
+		pid = 0;
 	}
 
-	while(pid == 0){
+	while(pid > 0){
 		memset ( &client_addr, 0, sizeof(client_addr) );
 		len=sizeof(client_addr);
-        sleep(15);
-		connfd = accept(listenfd, (struct sockaddr*) &client_addr, &len);
+		connfd = accept(listenfd, (struct sockaddr*) &client_addr, &len); //identifica connessione instaurata con un certo client secondo le regole del listening socket passato in input, restituisce nuovo socket che identifica nuova connessione
 		if (connfd < 0){
 			printf("Errore accept\n");
-			pid = -1;
+			pid = 0;
 		} else {
 			printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-			pid = fork();
+			pid = fork(); //crea un processo figlio partendo dal processo padre e restituisce 0 se i è nel padre e numero>0 nel caso di figlio (che sta per il numero del figlio)
 			if ( pid !=0 ){
-				close(connfd);
-				pid = 0;
+				close(connfd); //chiude il listening socket
 			} else {
 				close(listenfd);
-				pid = -1;
 				strcpy(buf,"\0");
                 
 				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
@@ -118,9 +111,12 @@ int main(int argc, char* argv[]){
 					exit (4);
 				}
 				printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-				close(connfd);
+				close(connfd); //chiude processo figlio
 			}
 		}
 	}
+    if (pid<0){
+        printf("Errore fork");
+    }
     return 0;
 }
