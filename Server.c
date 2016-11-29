@@ -12,7 +12,7 @@
 #define MAXLINE	512
 
 int check(char d[], int *a, int *b){
-	if (strcmp(d,"\0")==0) return -1; //cosa significa?
+	if (strcmp(d,"\0")==0) return -1;
 	if (d[1]!='(') return -1;
 	char* p = &d[2];
 	int num = (int)strtoul(p, &p, 10);
@@ -32,11 +32,11 @@ void tokenize(char buf[], int *x, int *y){
 	int n, boolean = 0;
 	int a = *x;
 	int b = *y;
-    printf("%s",buf);
 	while ((punt[0] != '\0')&(boolean != -1)){
-		sscanf(punt,"%ms%n",&token,&n);
+		sscanf(punt,"%m[^ \t\n]%n",&token,&n);
+        //printf("%s\n",token);
 		punt = &punt[n+1];
-		boolean = check(token, &a, &b); //li passa un token vuoto!!
+		boolean = check(token, &a, &b); //li passa un token vuoto!! (su mac)
 	}
     
 	if (boolean == -1){
@@ -45,7 +45,7 @@ void tokenize(char buf[], int *x, int *y){
 	else {
 		*x=a;
 		*y=b;
-		sprintf(buf,"x=%d,y=%d",a,b);
+		sprintf(buf,"[%d,%d]",a,b);
 	}
 	free(token);
 }
@@ -57,10 +57,9 @@ int main(int argc, char* argv[]){
     }
     
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, pid = 0, boolean = 0, x = 0, y = 0;
+	int listenfd, connfd, pid = 0, x = 0, y = 0;
 	char buf[MAXLINE];
 	socklen_t len=sizeof(client_addr);
-	char * str;
     ssize_t lung;
 	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,7 +79,7 @@ int main(int argc, char* argv[]){
 		exit(2);
 	}
 	
-	if (listen(listenfd, 10)<0){
+	if (listen(listenfd, 1)<0){
 		printf("Errore listen\n");
 		pid = -1;
 	}
@@ -88,6 +87,7 @@ int main(int argc, char* argv[]){
 	while(pid == 0){
 		memset ( &client_addr, 0, sizeof(client_addr) );
 		len=sizeof(client_addr);
+        sleep(15);
 		connfd = accept(listenfd, (struct sockaddr*) &client_addr, &len);
 		if (connfd < 0){
 			printf("Errore accept\n");
@@ -103,15 +103,12 @@ int main(int argc, char* argv[]){
 				pid = -1;
 				strcpy(buf,"\0");
                 
-				while ((lung = recv(connfd, buf, sizeof(MAXLINE), 0))>0){
+				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
 					buf[lung] = '\0';
 					tokenize(buf, &x, &y);
 					if (send(connfd, buf, strlen(buf)+1, 0) < 0){
 						printf("Errore send\n");
 						exit (3);
-					}
-					if (boolean == -1){
-						send(connfd, str, strlen(str)+1, 0);
 					}
 					strcpy(buf,"\0");
 				}

@@ -52,9 +52,10 @@ int main(int argc, char* argv[]){
 			close(sockfd);
 			return 0;
 		}
-		
+        
 		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
 			printf("Errore send\n");
+            close(sockfd);
 			exit (3);
 		}
 		
@@ -62,11 +63,10 @@ int main(int argc, char* argv[]){
 			printf("%s\n",buffer);
 		} else {
 			printf("Errore recv\n");
+            close(sockfd);
 			exit (4);
 		}
 	}
-
-	close(sockfd);
-	
+    close(sockfd);
 	return 0;
 }
