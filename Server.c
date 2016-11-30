@@ -1,12 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-//#include <sys/types.h>
-//#include <netinet/in.h>
-//#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-//#include <netdb.h>
 #include <arpa/inet.h>
 
 #define MAXLINE	512
@@ -15,7 +11,7 @@ int check(char d[], int *a, int *b){
 	if (strcmp(d,"\0")==0) return -1;
 	if (d[1]!='(') return -1;
 	char* p = &d[2];
-	int num = strtoul(p, &p, 10);
+	int num = (int)strtoul(p, &p, 10);
 	if ((*p!=')')||(d[2]==')')) return -1;
 	if (p[1]!='\0') return -1;
 	if ((d[0]=='S')||(d[0]=='s'))*a = -(-(*a)+num);
@@ -43,17 +39,21 @@ void tokenize(char buf[], int *x, int *y){
 	else {
 		*x=a;
 		*y=b;
-		sprintf(buf,"x=%d,y=%d",a,b);
+		sprintf(buf,"[%d,%d]",*x,*y);
 	}
 	free(token);
 }
 
 int main(int argc, char* argv[]){
+    if (argc!=2){
+        printf("Hai dato un numero sbagliato di argomenti!!\n");
+        return 0;
+    }
 	struct sockaddr_in servaddr, client_addr;
-	int listenfd, connfd, lung, pid = 0, boolean = 0, x = 0, y = 0;
+	int listenfd, connfd, pid = 1, x = 0, y = 0;
 	char buf[MAXLINE];
-	int len=sizeof(client_addr);
-	char * str;
+	socklen_t len=sizeof(client_addr);
+	ssize_t lung;
 	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd < 0){
@@ -71,42 +71,34 @@ int main(int argc, char* argv[]){
 		printf("Errore bind\n");
 		exit(2);
 	}
-	
 	if (listen(listenfd, 10)<0){
 		printf("Errore listen\n");
-		pid = -1;
+		pid = 0;
 	}
 
-	while(pid == 0){
+	while(pid > 0){
 		memset ( &client_addr, 0, sizeof(client_addr) );
 		len=sizeof(client_addr);
 		connfd = accept(listenfd, (struct sockaddr*) &client_addr, &len);
 		if (connfd < 0){
 			printf("Errore accept\n");
-			pid = -1;
+			pid = 0;
 		}
 		else{
 			printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 			pid = fork();
-			if ( pid !=0 ){
+			if ( pid > 0 ){
 				close(connfd);
-				pid = 0;
 			}
-			else {
+			else if (pid == 0){
 				close(listenfd);
-				pid = -1;
 				strcpy(buf,"\0");
 				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
 					buf[lung] = '\0';
-					printf("%s\n",buf);
 					tokenize(buf, &x, &y);
-					printf("%s\n",buf);
 					if (send(connfd, buf, strlen(buf)+1, 0) < 0){
 						printf("Errore send\n");
 						exit (3);
-					}
-					if (boolean == -1){
-						send(connfd, str, strlen(str)+1, 0);
 					}
 					strcpy(buf,"\0");
 				}
@@ -117,7 +109,15 @@ int main(int argc, char* argv[]){
 				printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 				close(connfd);
 			}
+			else {
+				printf("Errore fork\n");
+				close(connfd);
+				exit(4);
+			}
 		}
+	}
+	if (pid < 0){
+		printf("Errore fork\n");
 	}
     return 0;
 }

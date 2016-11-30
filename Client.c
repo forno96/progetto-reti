@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-//#include <sys/types.h>
-//#include <netinet/in.h>
-//#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-//#include <netdb.h>
 #include <arpa/inet.h>
 
 #define MAXLINE	512
 
 int main(int argc, char* argv[]){
+    if (argc!=3){
+        printf("Hai dato un numero sbagliato di argomenti!!\n");
+        return 0;
+    }
 	struct sockaddr_in servaddr;
-	int sockfd;
+	int sockfd, lung;
+	char direzione[MAXLINE];
+	char buffer[MAXLINE];
 	
 	sockfd=socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0 ) {
@@ -28,12 +30,9 @@ int main(int argc, char* argv[]){
 	
 	if (connect(sockfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
 		printf("Errore connessione\n");
+		close(sockfd);
 		exit (2);
 	}
-	
-	char direzione[MAXLINE];
-	char buffer[MAXLINE];
-	int lung;
 	
 	while(1){
 		strcpy(direzione,"\n");
@@ -51,6 +50,7 @@ int main(int argc, char* argv[]){
 		
 		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
 			printf("Errore send\n");
+			close(sockfd);
 			exit (3);
 		}
 		
@@ -59,6 +59,7 @@ int main(int argc, char* argv[]){
 		}
 		else{
 			printf("Errore recv\n");
+			close(sockfd);
 			exit (4);
 		}
 	}
