@@ -12,6 +12,11 @@ int check(char d[], int *a, int *b){
 	if (d[1]!='(') return -1;
 	char* p = &d[2];
 	int num = (int)strtoul(p, &p, 10);
+	
+	if (((d[2])=='-')&&(num > 0)) return -1;
+	else if (((d[2])=='+')&&(num < 0)) return -1;
+	else if (((int)d[2] > 0)&&(num < 0)) return -1;
+	
 	if ((*p!=')')||(d[2]==')')) return -1;
 	if (p[1]!='\0') return -1;
 	if ((d[0]=='S')||(d[0]=='s'))*a = -(-(*a)+num);
@@ -112,12 +117,10 @@ int main(int argc, char* argv[]){
 			else {
 				printf("Errore fork\n");
 				close(connfd);
+				close(listenfd);
 				exit(4);
 			}
 		}
-	}
-	if (pid < 0){
-		printf("Errore fork\n");
 	}
     return 0;
 }
