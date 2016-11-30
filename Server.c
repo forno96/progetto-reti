@@ -15,7 +15,7 @@ int check(char d[], int *a, int *b){
 	
 	if (((d[2])=='-')&&(num > 0)) return -1;
 	else if (((d[2])=='+')&&(num < 0)) return -1;
-	else if (((int)d[2] > 0)&&(num < 0)) return -1;
+	else if ((((int)d[2] >= 0)&&((int)d[2] <= 9))&&(num < 0)) return -1;
 	
 	if ((*p!=')')||(d[2]==')')) return -1;
 	if (p[1]!='\0') return -1;
