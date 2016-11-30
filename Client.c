@@ -1,12 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-//#include <sys/types.h>
-//#include <netinet/in.h>
-//#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-//#include <netdb.h>
 #include <arpa/inet.h>
 
 #define MAXLINE	512
@@ -18,8 +14,10 @@ int main(int argc, char* argv[]){
     }
     
 	struct sockaddr_in servaddr;
-	int sockfd;
-	
+	int sockfd, lung;
+	char direzione[MAXLINE];
+	char buffer[MAXLINE];
+    
 	sockfd=socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0 ) {
 		printf("Errore socket: %d\n",sockfd);
@@ -31,14 +29,11 @@ int main(int argc, char* argv[]){
 	servaddr.sin_port = htons(atoi(argv[2]));
 	servaddr.sin_addr.s_addr=inet_addr(argv[1]);
 	
-	if (connect(sockfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
+	if (connect(sockfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){//stabilisce la connessione con un server TCP
 		printf("Errore connessione\n");
+        close(sockfd);
 		exit (2);
 	}
-	
-	char direzione[MAXLINE];
-	char buffer[MAXLINE];
-	int lung;
 	
 	while(1){
 		strcpy(direzione,"\n");
@@ -53,13 +48,13 @@ int main(int argc, char* argv[]){
 			return 0;
 		}
         
-		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){
+		if (send(sockfd, direzione, strlen(direzione)+1, 0) < 0){//cerca di scrivere fino a count bytes dal buffer puntato nel buffer di sistema corrispondente al file descriptor fd perché siano poi trasmessi
 			printf("Errore send\n");
             close(sockfd);
 			exit (3);
 		}
 		
-		if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){
+		if ((lung = recv(sockfd, buffer, MAXLINE, 0))>0){//Si utilizza normalmente con socket connessi perché non consente l'applicazione per recuperare l'indirizzo sorgente dei dati ricevuti
 			printf("%s\n",buffer);
 		} else {
 			printf("Errore recv\n");
@@ -67,6 +62,6 @@ int main(int argc, char* argv[]){
 			exit (4);
 		}
 	}
-    close(sockfd);
+    close(sockfd);//chiude socket
 	return 0;
 }

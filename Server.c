@@ -30,15 +30,12 @@ void tokenize(char buf[], int *x, int *y){
 	int b = *y;
 	while ((punt[0] != '\0')&(boolean != -1)){
 		sscanf(punt,"%ms%n",&token,&n);
-        //printf("%s\n",token);
 		punt = &punt[n+1];
 		boolean = check(token, &a, &b);
 	}
-    
 	if (boolean == -1){
 		sprintf(buf,"Errore stringa: %s",token);
-	}
-	else {
+	} else {
 		*x=a;
 		*y=b;
 		sprintf(buf,"[%d,%d]",*x,*y);
@@ -70,7 +67,7 @@ int main(int argc, char* argv[]){
 	servaddr.sin_port        = htons(atoi(argv[1]));
 	printf("local address: IP %s port %d\n", inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port) );
 
-	if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0){ //collega i soket allindirizzo locale
+	if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0){ //collega i soket all'indirizzo locale
 		printf("Errore bind\n");
 		exit(2);
 	}
@@ -90,12 +87,11 @@ int main(int argc, char* argv[]){
 		} else {
 			printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 			pid = fork(); //crea un processo figlio partendo dal processo padre e restituisce 0 se i è nel padre e numero>0 nel caso di figlio (che sta per il numero del figlio)
-			if ( pid !=0 ){
-				close(connfd); //chiude il listening socket
-			} else {
+			if ( pid > 0 ){
+				close(connfd); //chiude il descrittore socket
+			} else if (pid == 0){
 				close(listenfd);
 				strcpy(buf,"\0");
-                
 				while ((lung = recv(connfd, buf, MAXLINE, 0))>0){
 					buf[lung] = '\0';
 					tokenize(buf, &x, &y);
@@ -105,18 +101,19 @@ int main(int argc, char* argv[]){
 					}
 					strcpy(buf,"\0");
 				}
-                
 				if (lung == -1){
 					printf("Errore recv\n");
 					exit (4);
 				}
 				printf("%s:%d connection closed\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-				close(connfd); //chiude processo figlio
-			}
+				close(connfd);
+            } else {
+                printf("Errore fork\n");
+                close(connfd);
+                close(listenfd); //chiude il listening socket
+                exit(4);
+            }
 		}
 	}
-    if (pid<0){
-        printf("Errore fork");
-    }
     return 0;
 }
